@@ -11,4 +11,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 require('./app/controllers/index')(app);
 
+console.log(Date.now());
+
 app.listen(3030);
