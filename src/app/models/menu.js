@@ -42,7 +42,7 @@ MenuSchema.pre("save", async function(next) {
 
   if(this.servedAt.getHours() < 10 || this.servedAt.getHours() >= 22) this.expiration.setHours(10);
   else if(this.servedAt.getHours() < 16) this.expiration.setHours(16);
-  else this.servedAt.setHours(22);
+  else this.expiration.setHours(22);
 
   next();
 });

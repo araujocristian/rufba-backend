@@ -41,8 +41,9 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 1.0,
   },
-  lastSubmitDate: {
-    type: Date,
+  lastSubmission: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Menu',
   },
   createdAt: {
     type: Date,
@@ -52,8 +53,11 @@ const UserSchema = new mongoose.Schema({
 
 UserSchema.pre("save", async function(next) {
   
-  const hash = await bcrypt.hash(this.password, 10);
-  this.password = hash;
+  if(!(this.password === undefined)) {
+
+    const hash = await bcrypt.hash(this.password, 10);
+    this.password = hash;
+  }
 
   next();
 });
