@@ -41,7 +41,7 @@ router.post("/authenticate", async (req, res) => {
 
   user.password = undefined;
 
-  res.send({ user, token: generateToken({ id: user.id }) });
+  return res.send({ user, token: generateToken({ id: user.id }) });
 });
 
 router.post("/forgot_password", async (req, res) => {
@@ -76,13 +76,13 @@ router.post("/forgot_password", async (req, res) => {
         if (err)
           return res
             .status(400)
-            .send({ error: "Connot send forgot password email" });
+            .send({ error: "Cannot send forgot password email" });
 
         return res.send();
       }
     );
   } catch (err) {
-    res.status(400).send({ error: "Erro on forgot password, try again" });
+    return res.status(400).send({ error: "Error on forgot password, try again" });
   }
 });
 
@@ -111,11 +111,11 @@ router.post("/reset_password", async (req, res) => {
 
     await user.save();
 
-    res.send();
+    return res.send();
     
   } catch (err) {
     console.log(err)
-    res
+    return res
       .status(400)
       .send({ error: "Não possível resetar a senha. Tente novamente." });
   }

@@ -23,11 +23,28 @@ const MenuSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  expiration: {
+    type: Date,
+    default: Date.now,
+  },
   priceSoldFor: {
     type: Number,
     require: true,
   }
   
+});
+
+MenuSchema.pre("save", async function(next) {
+
+  this.expiration.setMilliseconds(0);
+  this.expiration.setSeconds(0);
+  this.expiration.setMinutes(0);
+
+  if(this.servedAt.getHours() < 10 || this.servedAt.getHours() >= 22) this.expiration.setHours(10);
+  else if(this.servedAt.getHours() < 16) this.expiration.setHours(16);
+  else this.servedAt.setHours(22);
+
+  next();
 });
 
 const Menu = mongoose.model("Menu", MenuSchema);
