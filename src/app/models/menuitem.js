@@ -22,6 +22,10 @@ const MenuItemSchema = new mongoose.Schema({
     require: true,
     default: true,
   },
+  trustValue: {
+    type: Number,
+    default: 1.0,
+  }
 
 });
 
