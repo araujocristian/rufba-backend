@@ -19,7 +19,7 @@ router.get("/fooditem", async (req, res) => {
   } catch (err) {
     
     console.log(err);
-    return res.status(500).send({ erro: 'Erro na listagem de alimentos.' });
+    return res.status(500).send({ erro: 'Erro inesperado na listagem de alimentos.' });
 
   }
 
@@ -47,7 +47,7 @@ router.get("/fooditem/:foodNameOrId", async (req, res) => {
   } catch (err) {
     
     console.log(err);
-    return res.status(500).send({ erro: 'Erro na busca do alimento.' });
+    return res.status(500).send({ erro: 'Erro inesperado na busca do alimento.' });
 
   }
 
@@ -142,7 +142,7 @@ router.delete("/fooditem", async (req, res) => {
   
   } else {
 
-    return res.status(401).send({ error: 'Você não possui autorização para cadastrar alimentos.' });
+    return res.status(401).send({ error: 'Você não possui autorização para deletar alimentos.' });
   }
 
 });

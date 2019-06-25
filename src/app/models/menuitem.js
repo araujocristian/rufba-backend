@@ -18,9 +18,8 @@ const MenuItemSchema = new mongoose.Schema({
     require: true,
   },
   availability: {
-    type: Boolean,
-    require: true,
-    default: true,
+    type: Number,
+    default: 0.0,
   },
   trustValue: {
     type: Number,
