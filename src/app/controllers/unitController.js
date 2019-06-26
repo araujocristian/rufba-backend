@@ -31,7 +31,7 @@ router.get("/unit", async (req, res) => {
   } catch (err) {
     
     console.log(err);
-    return res.status(500).send({ erro: 'Erro na listagem de unidades.' });
+    return res.status(500).send({ erro: 'Erro inesperado na listagem de unidades.' });
 
   }
 
@@ -46,33 +46,11 @@ router.get("/unit/:unitNameOrId", async (req, res) => {
 
     if(mongodb.ObjectID.isValid(req.params.unitNameOrId)) {
 
-      unit = await Unit.findById(req.params.unitNameOrId).populate({
-
-        path: 'currentMenu',
-  
-        populate: {
-  
-          path: 'menuItems',
-  
-          populate: { path: 'foodItem' }
-        }
-  
-      });
+      unit = await Unit.findById(req.params.unitNameOrId);
 
     } else {
 
-      unit = await Unit.findOne({ name: req.params.unitNameOrId }).populate({
-
-        path: 'currentMenu',
-  
-        populate: {
-  
-          path: 'menuItems',
-  
-          populate: { path: 'foodItem' }
-        }
-  
-      });
+      unit = await Unit.findOne({ name: req.params.unitNameOrId });
     }
 
     if(!unit) return res.status(400).send({ erro: 'Unidade não encontrada' });
@@ -81,7 +59,7 @@ router.get("/unit/:unitNameOrId", async (req, res) => {
   } catch (err) {
     
     console.log(err);
-    return res.status(500).send({ erro: 'Erro na busca da Unidade.' });
+    return res.status(500).send({ erro: 'Erro inesperado na busca da Unidade.' });
 
   }
 
@@ -132,15 +110,23 @@ router.get("/unit/:unitNameOrId/menu", async (req, res) => {
 
     var trustedItems = [];
 
-    for (let index = 0; index < maxTrustedItems && index < menuItems.length; index++) 
-      if(menuItems[index].trustValue >= minTrustThreshold) trustedItems.push(menuItems[index]);
+    for (let index = 0; index < maxTrustedItems && index < menuItems.length; index++) {
+
+      if(menuItems[index].trustValue >= minTrustThreshold) {
+
+        if(menuItems[index].availability <= -5) menuItems[index].availability = false;
+        else menuItems[index].availability = true;
+
+        trustedItems.push(menuItems[index]);
+      }
+    }
 
     return res.send({trustedItems});
     
   } catch (err) {
     
     console.log(err);
-    return res.status(500).send({ erro: 'Erro na busca da Unidade.' });
+    return res.status(500).send({ erro: 'Erro inesperado na busca da Unidade.' });
 
   }
 
@@ -224,7 +210,7 @@ router.put("/unit/:unitNameOrId/data", async (req, res) => {
   
   } else {
 
-    return res.status(401).send({ error: 'Você não possui autorização para cadastrar unidades.' });
+    return res.status(401).send({ error: 'Você não possui autorização para atualizar unidades.' });
   }
 
 });
@@ -236,7 +222,7 @@ router.put("/unit/:unitNameOrId/menu", async (req, res) => {
 
     if(req.badTime) return res.status(400).send({ erro: 'Não é permitido enviar formulários nesse horário' });
 
-    user = await User.findById(req.userId);
+    user = await User.findById(req.userId).populate(['lastSubmission']);
 
     var reliability;
     if(req.isAdmin) reliability = user.reliability*adminRelevance;
@@ -276,17 +262,25 @@ router.put("/unit/:unitNameOrId/menu", async (req, res) => {
     } 
 
     if(!unit) return res.status(400).send({ erro: 'Unidade não encontrada' });
+
+    if(user.lastSubmission.expiration.getTime() == unit.currentMenu.expiration.getTime()) 
+      return res.status(400).send({ erro: 'Usuário já contribuiu neste horário, não é permitido fazer isso mais de uma vez' });
     
     const { menuItems } = req.body;
+
+    const userMenu = await Menu.create({ menuItems: [], unit: unit._id,  priceSoldFor: unit.priceCharged});
 
     await Promise.all(menuItems.map(async menuItem => { //aguardar tudo isso aqui ocorrer
 
       const { name, availability } = menuItem;
       const food = await FoodItem.findOne({ name });
 
+      const userItem = await MenuItem.create({ menu: unit.currentMenu._id, foodItem: food._id, trustValue: reliability });
+      userMenu.menuItems.push(userItem);
+
       if(!food) {
 
-        console.log('Alimento não encontrado.');
+        //console.log('Alimento não encontrado.');
 
       } else {
 
@@ -299,6 +293,7 @@ router.put("/unit/:unitNameOrId/menu", async (req, res) => {
 
             exists = true;
             element.trustValue += reliability;
+            if(!availability) element.availability -= reliability;
             element.save();
           }
 
@@ -306,7 +301,7 @@ router.put("/unit/:unitNameOrId/menu", async (req, res) => {
 
         if(!exists) {
           
-          const item = await MenuItem.create({ menu: unit.currentMenu._id, foodItem: food._id, availability, trustValue: reliability });
+          const item = await MenuItem.create({ menu: unit.currentMenu._id, foodItem: food._id, trustValue: reliability });
           unit.currentMenu.menuItems.push(item);
         
         }
@@ -314,8 +309,18 @@ router.put("/unit/:unitNameOrId/menu", async (req, res) => {
 
     }));
 
+    user.lastSubmission = userMenu;
+
+    user.mealsSent += 1;
+
+    await userMenu.save();
+    await user.save();
     await unit.currentMenu.save();
     await unit.save();
+
+    //const temp = await User.findById(req.userId).populate(['lastSubmission']);
+
+    //console.log(temp);
 
     return res.send({ unit });
     
@@ -369,7 +374,7 @@ router.delete("/unit/:unitNameOrId", async (req, res) => {
   
   } else {
 
-    return res.status(401).send({ error: 'Você não possui autorização para cadastrar alimentos.' });
+    return res.status(401).send({ error: 'Você não possui autorização para deletar unidades.' });
   }
 
 });
