@@ -20,7 +20,8 @@
     "mongoose": "^5.5.9",
     "nodemailer": "^6.1.1",
     "nodemailer-express-handlebars": "^3.0.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "prompt": "^1.0.0"
   },
   "devDependencies": {
     "nodemon": "^1.19.1"
