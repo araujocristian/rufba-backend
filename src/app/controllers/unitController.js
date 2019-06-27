@@ -262,9 +262,16 @@ router.put("/unit/:unitNameOrId/menu", async (req, res) => {
     } 
 
     if(!unit) return res.status(400).send({ erro: 'Unidade não encontrada' });
+    else {
 
-    if(user.lastSubmission.expiration.getTime() == unit.currentMenu.expiration.getTime()) 
-      return res.status(400).send({ erro: 'Usuário já contribuiu neste horário, não é permitido fazer isso mais de uma vez' });
+      if(user.lastSubmission !== undefined && unit.currentMenu !== undefined) {
+
+        if(user.lastSubmission.expiration.getTime() == unit.currentMenu.expiration.getTime()) 
+        return res.status(400).send({ erro: 'Usuário já contribuiu neste horário, não é permitido fazer isso mais de uma vez' });
+
+      }
+
+    }
     
     const { menuItems } = req.body;
 
