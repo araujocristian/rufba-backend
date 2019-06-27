@@ -56,6 +56,7 @@ async function connectMongo(username, password) {
   return;
 }
 
-getCredentials();
+//getCredentials();
+connectMongo("heroku", "KmsQo7BMH2OcLMa8");
 
 module.exports = mongoose;
