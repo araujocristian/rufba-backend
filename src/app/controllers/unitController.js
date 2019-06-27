@@ -280,6 +280,8 @@ router.put("/unit/:unitNameOrId/menu", async (req, res) => {
     await Promise.all(menuItems.map(async menuItem => { //aguardar tudo isso aqui ocorrer
 
       const { name, availability } = menuItem;
+      console.log("NOME DA COMIDA:");
+      console.log(name);
       const food = await FoodItem.findOne({ name });
 
       const userItem = await MenuItem.create({ menu: unit.currentMenu._id, foodItem: food._id, trustValue: reliability });
