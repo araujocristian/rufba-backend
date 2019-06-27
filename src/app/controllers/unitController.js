@@ -280,12 +280,9 @@ router.put("/unit/:unitNameOrId/menu", async (req, res) => {
     await Promise.all(menuItems.map(async menuItem => { //aguardar tudo isso aqui ocorrer
 
       const { name, availability } = menuItem;
-      console.log("NOME DA COMIDA:");
-      console.log(name);
+      //console.log("NOME DA COMIDA:");
+      //console.log(name);
       const food = await FoodItem.findOne({ name });
-
-      const userItem = await MenuItem.create({ menu: unit.currentMenu._id, foodItem: food._id, trustValue: reliability });
-      userMenu.menuItems.push(userItem);
 
       if(!food) {
 
@@ -294,6 +291,12 @@ router.put("/unit/:unitNameOrId/menu", async (req, res) => {
       } else {
 
         var exists = false;
+
+        ////////////
+        const userItem = await MenuItem.create({ menu: unit.currentMenu._id, foodItem: food._id, trustValue: reliability });
+        userMenu.menuItems.push(userItem);
+        ////////////
+
         await unit.currentMenu.menuItems.forEach(element => {
 
           //console.log({ id1: element.foodItem.name, id2: food.name});
